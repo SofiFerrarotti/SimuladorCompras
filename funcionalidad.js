@@ -1,71 +1,78 @@
-/* 
-Funcionalidad:
-Seleccionar el producto a comprar de la lista
-Seleccionar la cantidad de productos a comprar
-Tener un descuento
-Pagar con cuotas o sin cuotas
-Mostrar el total a pagar
-Mostrar el total a pagar con el descuento
-Mostrar el total a pagar con el descuento y cuotas
-*/ 
-const productos = {
-    teclado: { nombre: 'Teclado', precio: 30000 },
-    mouse: { nombre: 'Mouse', precio: 5000 },
-    monitor: { nombre: 'Monitor', precio: 150000 },
-    cpu: { nombre: 'CPU', precio: 300000 }
+document.addEventListener('DOMContentLoaded', () => {
+    displayProducts();
+    displayCartCount();
+});
+
+const addToCart = (product) => {
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    let existingProductIndex = cart.findIndex(item => item.id === product.id);
+
+    if (existingProductIndex !== -1) {
+        cart[existingProductIndex].quantity += product.quantity;
+    } else {
+        cart.push(product);
+    }
+
+    localStorage.setItem('cart', JSON.stringify(cart));
+    displayCartCount();
 };
 
-let carrito = []; 
-let total = 0; 
-let pagoCuotas = 0; 
+const displayCartCount = () => {
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    let cartCount = cart.reduce((acc, product) => acc + product.quantity, 0);
+    document.getElementById('cart-count').textContent = cartCount;
+};
 
-alert('Bienvenido, la lista de los productos es: teclado, mouse, monitor, cpu');
+const displayProducts = () => {
+    const productsContainer = document.getElementById('products');
+    productsContainer.innerHTML = ''; 
+    products.forEach(product => {
+        const productElement = document.createElement('div');
+        productElement.className = 'col-sm-6 product-item';
+        productElement.innerHTML = `
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">${product.name}</h5>
+                    <p class="card-text">Precio: $${product.price}</p>
+                    <button class="btn btn-primary" onclick="addToCart({ id: ${product.id}, name: '${product.name}', price: ${product.price}, quantity: 1 })">Agregar al carrito</button>
+                </div>
+            </div>
+        `;
+        productsContainer.appendChild(productElement);
+    });
+};
 
-do {
-    let producto = prompt('¿Qué producto deseas comprar?').toLowerCase(); 
-    if (producto in productos) {
-        let cantidad = parseInt(prompt(`¿Cuántos ${productos[producto].nombre} deseas comprar?`));
-        if (!isNaN(cantidad) && cantidad > 0) {
-            let descuento = prompt('¿Tienes cupón de descuento? (si/no)').toLowerCase();
-            let descuentoPorcentaje = 0; 
-            if (descuento === 'si') {
-                descuentoPorcentaje = parseFloat(prompt('Ingresa el descuento en porcentaje (sin el signo %)'));
-                if (!isNaN(descuentoPorcentaje)) {
-                    productos[producto].precioConDescuento = productos[producto].precio * (1 - descuentoPorcentaje / 100);
-                    alert(`Con el ${descuentoPorcentaje}% de descuento, tu ${productos[producto].nombre} queda en: $${productos[producto].precioConDescuento.toFixed(2)} por unidad.`);
-                } else {
-                    alert('Por favor, ingresa un valor numérico válido para el descuento.');
-                    continue;
-                }
-            }
-            carrito.push({ producto: productos[producto].nombre, cantidad: cantidad, precioUnitario: productos[producto].precio });
-            total += productos[producto].precio * cantidad * (1 - (descuentoPorcentaje / 100));
-        } else {
-            alert('Por favor, ingresa una cantidad válida.');
-            continue;
-        }
+const calcularCuotas = (total, cuotas) => {
+    if (cuotas === 1) {
+        return total; 
     } else {
-        alert('No tenemos ese producto');
-        continue;
+        const tasa = 0.05; 
+        const montoCuota = (total * tasa) / (1 - Math.pow(1 + tasa, -cuotas));
+        return montoCuota;
     }
-} while (confirm('¿Quieres seguir comprando?'));
+};
 
+const completarCompra = () => {
+    const cuotas = parseInt(document.getElementById('fees').value);
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const total = cart.reduce((acc, product) => acc + (product.price * product.quantity), 0);
+    const montoCuota = calcularCuotas(total, cuotas);
 
-let pago = prompt('¿Desea pagar en cuotas? (si/no)').toLowerCase();
-if (pago === 'si') {
-    pagoCuotas = parseInt(prompt('Ingresa la cantidad de cuotas'));
-    if (isNaN(pagoCuotas) || pagoCuotas <= 0) {
-        alert('Por favor, ingresa una cantidad de cuotas válida.');
-    }
-}
+    let mensajeCuotas = (cuotas === 1) ? `Total a pagar: $${total.toFixed(2)}` : `Total en ${cuotas} cuotas: $${montoCuota.toFixed(2)} por cuota`;
 
-let detalleCompra = 'Detalle de la compra:\n';
-carrito.forEach(item => {
-    detalleCompra += `${item.cantidad} ${item.producto}: $${(item.precioUnitario * item.cantidad).toFixed(2)}\n`;
-});
-detalleCompra += `Total: $${total.toFixed(2)}\n`;
-if (pagoCuotas > 0) {
-    detalleCompra += `Pagado en ${pagoCuotas} cuotas.`;
-}
-
-alert(detalleCompra);
+    Swal.fire({
+        title: '¿Deseas completar la compra?',
+        text: mensajeCuotas,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, comprar',
+        cancelButtonText: 'No, cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire('Compra realizada', '', 'success');
+            localStorage.removeItem('cart');
+            displayCartCount();
+            displayCart();
+        }
+    });
+};

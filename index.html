@@ -1,11 +1,57 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script src="funcionalidad.js"></script>
-        <title>Funcionalidad</title>
-    </head>
-    <body>              
-    </body>
-</html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@4/dark.min.css">
+    <title>Funcionalidad</title>
+</head>
+<body>
+    <div class="container">
+        <div class="row g-5">
+            <h4 class="mb-3">Ingrese sus datos</h4>
+            <form class="needs-validation" id="form" novalidate onsubmit="addProductToCart(event)">
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <label for="firstName" class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="firstName" placeholder="" value="" required>
+                        <div class="invalid-feedback">
+                            Valid first name is required.
+                        </div>
+                    </div>
+                    <div class="container">
+                        <h4 class="mb-3">Productos disponibles</h4>
+                        <div id="products" class="row g-3"></div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <label for="fees" class="form-label">Ingrese la cantidad de cuotas</label>
+                    <input type="number" class="form-control" id="fees" placeholder="" required>
+                    <div class="invalid-feedback">
+                        Please provide a valid amount.
+                    </div>
+                </div>
+                <hr class="my-4">
+                <button class="w-100 btn btn-primary btn-lg" type="button" onclick="completarCompra()">Comprar</button>
+            </form>
+        </div>
+        <button id="cart-button" onclick="toggleCart()">Carrito (<span id="cart-count">0</span>)</button>
+        <div id="cart" style="display:none;"></div>
+    </div>
+
+    <footer class="my-5 pt-5 text-muted text-center text-small">
+        <p class="mb-1">&copy; 2023 Company, Inc</p>
+        <ul class="list-inline">
+            <li class="list-inline-item"><a href="#">Privacy</a></li>
+            <li class="list-inline-item"><a href="#">Terms</a></li>
+            <li class="list-inline-item"><a href="#">Support</a></li>
+        </ul>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="storage.js"></script>
+    <script src="funcionalidad.js"></script>
+    <script src="index.js"></script>
+</body>
+</html> 
+
