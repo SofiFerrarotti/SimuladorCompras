@@ -1,7 +1,39 @@
 document.addEventListener('DOMContentLoaded', () => {
-    displayProducts();
+    fetch('products.json')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error al cargar los productos');
+            }
+            return response.json();
+        })
+        .then(data => {
+            displayProducts(data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire('Error', 'No se pudieron cargar los productos.', 'error');
+        });
     displayCartCount();
 });
+
+const displayProducts = (products) => {
+    const productsContainer = document.getElementById('products');
+    productsContainer.innerHTML = '';
+    products.forEach(product => {
+        const productElement = document.createElement('div');
+        productElement.className = 'col-sm-6 product-item';
+        productElement.innerHTML = `
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">${product.name}</h5>
+                    <p class="card-text">Precio: $${product.price}</p>
+                    <button class="btn btn-primary" onclick="addToCart({ id: ${product.id}, name: '${product.name}', price: ${product.price}, quantity: 1 })">Agregar al carrito</button>
+                </div>
+            </div>
+        `;
+        productsContainer.appendChild(productElement);
+    });
+};
 
 const addToCart = (product) => {
     let cart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -21,25 +53,6 @@ const displayCartCount = () => {
     let cart = JSON.parse(localStorage.getItem('cart')) || [];
     let cartCount = cart.reduce((acc, product) => acc + product.quantity, 0);
     document.getElementById('cart-count').textContent = cartCount;
-};
-
-const displayProducts = () => {
-    const productsContainer = document.getElementById('products');
-    productsContainer.innerHTML = ''; 
-    products.forEach(product => {
-        const productElement = document.createElement('div');
-        productElement.className = 'col-sm-6 product-item';
-        productElement.innerHTML = `
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">${product.name}</h5>
-                    <p class="card-text">Precio: $${product.price}</p>
-                    <button class="btn btn-primary" onclick="addToCart({ id: ${product.id}, name: '${product.name}', price: ${product.price}, quantity: 1 })">Agregar al carrito</button>
-                </div>
-            </div>
-        `;
-        productsContainer.appendChild(productElement);
-    });
 };
 
 const calcularCuotas = (total, cuotas) => {

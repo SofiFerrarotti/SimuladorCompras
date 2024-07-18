@@ -1,24 +1,23 @@
-const products = [
-    { id: 1, name: 'Teclado', price: 100000 },
-    { id: 2, name: 'Mouse', price: 30000 },
-    { id: 3, name: 'Monitor', price: 300000 },
-    { id: 4, name: 'CPU', price: 50000000 }
-];
-
-function addProductToCart(event) {
+const addProductToCart = (event) => {
     event.preventDefault();
 
     let name = document.getElementById('firstName').value;
     let amount = parseInt(document.getElementById('amount').value);
 
-    if (name && amount) {
+    if (name && amount && amount > 0) {
         let product = {
             name: name,
             quantity: amount
         };
         addToCart(product);
+        document.getElementById('firstName').value = '';
+        document.getElementById('amount').value = '';
+    } else {
+        Swal.fire('Error', 'Por favor ingrese un nombre válido y una cantidad mayor a 0', 'error');
     }
-}
+};
+
+document.getElementById('form').addEventListener('submit', addProductToCart);
 
 function toggleCart() {
     let cart = document.getElementById('cart');
